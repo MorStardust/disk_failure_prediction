@@ -128,16 +128,24 @@ where $TP$ refers to true positives, $FP$ is false positives and $FN$ denotes fa
 \begin{table}
 	\caption{Confusion Matrix}
 	\centering
-	\begin{tabular}{|c|c|c|}
+	\begin{tabular}{|c|c|c|c|}
 		\hline
-		& actual positive & actual negative \\
+		& actual positive & actual negative & total \\
 		\hline
-		predicted positive & $TP$ & $FP$ \\
+		predicted positive & $TP$ & $FP$ & $TP+FP$ \\
 		\hline
-		predicted negative & $FN$ & $TN$ \\
+		predicted negative & $FN$ & $TN$ & $FN+TN$ \\
+		\hline
+		total	&	$TP+FN$ & $TN+FP$ & \\
 		\hline
 	\end{tabular}
 \end{table}
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=\textwidth]{img/auc.PNG}
+	\caption{Confusion Matrix}
+\end{figure}
 % ----------------------------------------------------------------
 %
 % ----------------------------------------------------------------
