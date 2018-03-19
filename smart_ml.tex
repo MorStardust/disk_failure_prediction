@@ -83,6 +83,21 @@ There are some critical questions to be answered if one needs to complete this c
 	\item Embedded
 \end{itemize}
 
+From experience, BackBlaze have found the following 5 SMART metrics indicate impending disk drive failure:
+
+\begin{itemize}
+	\item \textbf{SMART 5: Reallocated Sector Count.} \\
+	When the drive’s logic believe that a sector is damaged, it can remap the faulty sector number to a new physical sector drawn from a pool of spares.
+	\item \textbf{SMART 187: Reported Uncorrectable Errors.} \\
+	The count of errors that could not be recovered using hardware ECC. Large scan error counts can be indicative of surface defects and therefore are believed to be indicative of lower reliability.
+	\item \textbf{SMART 188: Command Timeout.} \\
+	The count of aborted operations due to HDD timeout.
+	\item \textbf{SMART 197: Current Pending Sector Count.} \\
+	Disk drives put suspect bad sectors on probation until they either fail permanently and are reallocated or continue to work without problems.
+	\item \textbf{SMART 198: Offline Uncorrectable.} \\
+	The total count of uncorrectable errors when reading/writing to a sector. A rise in the value of this attribute indicated defects of the disk surface and/or problems in the mechanical subsystem.
+\end{itemize}
+
 Ninety variables and millions of data points not only take an extensive amount of time to train and test on, but can also lead to overfitting. To reduce the computational workload and improve the performance of our models, we chose   to   select   only   the   most   relevant   features   and   avoid   features   with   a   large   amount   of   unfilled   data   points.
 % ----------------------------------------------------------------
 %
@@ -127,14 +142,14 @@ To evaluate the classifier's performance, we measure precision, recall and F-sco
 \begin{itemize}
 	\item Precision: to measure the ability of the classifier to correctly identify disks at risk;
 	\item Recall: to measure the classifier's sensitivity. A higher recall is equivalent to minimizing the number of false negatives;
-	\item F-score: the combined score between precision and recall, or the weighted harmonic mean;
+	\item $F_1$ score: the combined score between precision and recall, or the weighted harmonic mean;
 	\item ROC: Receiver Operating Characteristic, is the plot of TPR vs FPR. In usual, we can also draw the Precision-Recall Curve.
 \end{itemize}
 
 \begin{equation}
 	P = \dfrac{TP}{TP+FP} \quad\quad 
 	R = \dfrac{TP}{TP+FN} \quad\quad 
-	F_{score} = \dfrac{2PR}{P+R}
+	F_{1}\; score = \dfrac{2PR}{P+R}
 \end{equation}
 where $TP$ refers to true positives, $FP$ is false positives and $FN$ denotes false negatives.
 
