@@ -1,9 +1,20 @@
 \documentclass[12pt,a4paper,english]{amsart}
 \usepackage{graphicx}
+% \usepackage{algorithm}
+% \usepackage{algorithmic}
+\makeatletter  
+\newif\if@restonecol  
+\makeatother  
+\let\algorithm\relax  
+\let\endalgorithm\relax  
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+\usepackage{algpseudocode}
 \usepackage{hyperref}
 \usepackage{lineno}
 \usepackage[a4paper, top=2.8cm, left=2cm, right=2cm, bottom=2cm]{geometry}
 %\linenumbers
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}  % Use Input in the format of Algorithm  
+\renewcommand{\algorithmicensure}{\textbf{Output:}} % Use Output in the format of Algorithm 
 % ----------------------------------------------------------------
 \vfuzz2pt % Don't report over-full v-boxes if over-edge is small
 \hfuzz2pt % Don't report over-full h-boxes if over-edge is small
@@ -50,6 +61,27 @@ Hughes et al also studied machine learning methods for predicting failures in HD
 Data sources from \url{https://www.backblaze.com/b2/hard-drive-test-data.html}
 
 As of the end of 2017, there are about 88 million entries totaling 23 GB of data. Each entry consists of the date, manufacturer, model, serial number, status (operational or failed), and all of the SMART attributes reported by that drive. 
+5, 187, 188, 197, 198
+\begin{algorithm}  
+	\caption{Data importing and preprocessing}
+	\LinesNumbered  
+	\KwIn{The origianl test data of the year of 2017 plus Q4 of 2016 from Backblaze}
+	\KwOut{Raw and normalized values of the five SMART attributes for the year of 2017, along with failure/operational status, date, serial number}
+	($X$, $Y$) = Data selection(SMART $5$, SMART $187$, SMART $188$, SMART $197$, SMART $198$, date, serial number, Failure status)\;  
+	Initialize a new column for each SMART attribute with $0$, named SMART binary, to denote if this attribute is non-zero  \;
+	\If{ SMART attributes $\neq 0$ }
+	{
+		let the value be $1$
+	}
+	\If{ failure status is true}  
+	{  
+		Mark last $60$ days (if applicable) of the HDD's \textit{failure status as true} \;  
+	}
+	\textbf{return} $X$ and $Y$, with three versions (raw, normalized, binary values of SMART attributes);
+\end{algorithm}  
+
+% http://blog.csdn.net/lwb102063/article/details/53046265
+% https://oeis.org/wiki/List_of_LaTeX_mathematical_symbols
 
 There are some critical questions to be answered if one needs to complete this case study:
 
@@ -107,6 +139,20 @@ Ninety variables and millions of data points not only take an extensive amount o
 How to choose machine learning models and tune the parameters?
 
 Reduce to a classification problem.
+
+\begin{algorithm}  
+	\caption{Model selection, training, and parameters tuning}
+	\LinesNumbered  
+	\KwIn{$X$ and $Y$ of the year of 2017}
+	\KwOut{Trained model}
+	Split the datasets into two pieces, training datasets ($X_{train}$, $Y_{train}$) and validation datasets ($X_{test}$, $Y_{test}$), by cross validation\;
+	Train different models with training datasets\;
+	\Repeat{parameters are optimized or maximum iterations exhausted}
+	{
+		Evalute the models and tune parameters
+	}
+	\textbf{return} trained model;
+\end{algorithm}  
 
 \subsection*{Base Line}
 
