@@ -28,11 +28,11 @@
 \keywords{Machine Learning, SMART, Disk Failure}%
 
 \date{\today}
-%\dedicatory{}%
-%\commby{}%
+\thanks{The motivation of this report is to show a case study of disk failure prediction as a coding test/supporting material for the application of an AIOps position of Alibaba Group.}
+%\dedicatory{2}%
+%\commby{}%
 % ----------------------------------------------------------------
 \begin{abstract}
-  The motivation of this report is to show a case study of disk failure prediction as a coding test/supporting material for the application of an AIOps position of Alibaba Group.
   In this report, the detailed illustration of data preprocessing and feature engineering, model choosing and parameter tuning, results evaluation and insights from this task are included.
 \end{abstract}
 \maketitle
@@ -69,10 +69,18 @@ As of the end of 2017, there are about 88 million entries totaling 23 GB of data
 	\KwOut{Raw and normalized values of the five SMART attributes for the year of 2017, along with failure/operational status, date, serial number}
 	($X$, $Y$) = Data selection(SMART $5$, SMART $187$, SMART $188$, SMART $197$, SMART $198$, date, serial number, Failure status)\;  
 	Initialize a new column for each SMART attribute with $0$, named SMART binary, to denote if this attribute is non-zero  \;
-	\If{ SMART attributes $\neq 0$ }
+	
+	\eIf{SMART attributes $\neq$ null}
 	{
-		let the value be $1$
+		\lIf {SMART attributes $\neq 0$}
+		{
+			let the value be $1$
+		}
 	}
+	{
+		let the value be $0$ \;
+	}
+
 	\If{ failure status is true}  
 	{  
 		Mark last $60$ days (if applicable) of the HDD's \textit{failure status as true} \;  
@@ -82,6 +90,7 @@ As of the end of 2017, there are about 88 million entries totaling 23 GB of data
 
 % http://blog.csdn.net/lwb102063/article/details/53046265
 % https://oeis.org/wiki/List_of_LaTeX_mathematical_symbols
+% https://www.cnblogs.com/jingwhale/p/4250296.html
 
 There are some critical questions to be answered if one needs to complete this case study:
 
@@ -115,20 +124,8 @@ There are some critical questions to be answered if one needs to complete this c
 	\item Embedded
 \end{itemize}
 
-From experience, BackBlaze have found the following 5 SMART metrics indicate impending disk drive failure:
+From experience, BackBlaze have found the following five SMART metrics indicate impending disk drive failure:
 
-\begin{itemize}
-	\item \textbf{SMART 5: Reallocated Sector Count.} \\
-	When the drive’s logic believe that a sector is damaged, it can remap the faulty sector number to a new physical sector drawn from a pool of spares.
-	\item \textbf{SMART 187: Reported Uncorrectable Errors.} \\
-	The count of errors that could not be recovered using hardware ECC. Large scan error counts can be indicative of surface defects and therefore are believed to be indicative of lower reliability.
-	\item \textbf{SMART 188: Command Timeout.} \\
-	The count of aborted operations due to HDD timeout.
-	\item \textbf{SMART 197: Current Pending Sector Count.} \\
-	Disk drives put suspect bad sectors on probation until they either fail permanently and are reallocated or continue to work without problems.
-	\item \textbf{SMART 198: Offline Uncorrectable.} \\
-	The total count of uncorrectable errors when reading/writing to a sector. A rise in the value of this attribute indicated defects of the disk surface and/or problems in the mechanical subsystem.
-\end{itemize}
 
 Ninety variables and millions of data points not only take an extensive amount of time to train and test on, but can also lead to overfitting. To reduce the computational workload and improve the performance of our models, we chose   to   select   only   the   most   relevant   features   and   avoid   features   with   a   large   amount   of   unfilled   data   points.
 % ----------------------------------------------------------------
@@ -199,21 +196,33 @@ To evaluate the classifier's performance, we measure precision, recall and F-sco
 \end{equation}
 where $TP$ refers to true positives, $FP$ is false positives and $FN$ denotes false negatives.
 
-\begin{table}
-	\caption{Confusion Matrix}
-	\centering
-	\begin{tabular}{|c|c|c|c|}
-		\hline
-		& actual positive & actual negative & total \\
-		\hline
-		predicted positive & $TP$ & $FP$ & $TP+FP$ \\
-		\hline
-		predicted negative & $FN$ & $TN$ & $FN+TN$ \\
-		\hline
-		total	&	$TP+FN$ & $TN+FP$ & \\
-		\hline
-	\end{tabular}
-\end{table}
+% \begin{table}
+% 	\caption{Confusion Matrix}
+% 	\centering
+% 	\begin{tabular}{|c|c|c|c|}
+% 		\hline
+% 		& actual positive & actual negative & total \\
+% 		\hline
+% 		predicted positive & $TP$ & $FP$ & $TP+FP$ \\
+% 		\hline
+% 		predicted negative & $FN$ & $TN$ & $FN+TN$ \\
+% 		\hline
+% 		total	&	$TP+FN$ & $TN+FP$ & \\
+% 		\hline
+% 	\end{tabular}
+% \end{table}
+
+\begin{algorithm}  
+	\caption{Results evaluation}
+	\LinesNumbered  
+	\KwIn{$X_{test}$ and $Y_{test}$ of Q4 of 2016, trained models}
+	\KwOut{Evaluation of models}
+	Predict the failure status of $X_{test}$ with trained models\;
+	Contrast to $Y_{test}$ and compute $TP$, $TN$, $FP$ and $FN$\;
+	Calculate precision, recall, and $F_1$ score\;
+	Draw the ROC and AUC plots\;
+	\textbf{return} true;
+\end{algorithm}
 
 \begin{figure}[htb]
 	\centering
@@ -231,5 +240,29 @@ What insights or lessons learned from this task?
 % ----------------------------------------------------------------
 \bibliographystyle{amsplain}
 \bibliography{smart_ml}
+% ----------------------------------------------------------------
+\newpage
+
+\section*{Appendix}
+
+
+\subsection*{Appendix A: SMART Attributes}
+
+\begin{appendix}
+	\begin{itemize}
+		\item \textbf{SMART 5: Reallocated Sector Count.} \\
+		When the drive’s logic believe that a sector is damaged, it can remap the faulty sector number to a new physical sector drawn from a pool of spares.
+		\item \textbf{SMART 187: Reported Uncorrectable Errors.} \\
+		The count of errors that could not be recovered using hardware ECC. Large scan error counts can be indicative of surface defects and therefore are believed to be indicative of lower reliability.
+		\item \textbf{SMART 188: Command Timeout.} \\
+		The count of aborted operations due to HDD timeout.
+		\item \textbf{SMART 197: Current Pending Sector Count.} \\
+		Disk drives put suspect bad sectors on probation until they either fail permanently and are reallocated or continue to work without problems.
+		\item \textbf{SMART 198: Offline Uncorrectable.} \\
+		The total count of uncorrectable errors when reading/writing to a sector. A rise in the value of this attribute indicated defects of the disk surface and/or problems in the mechanical subsystem.
+	\end{itemize}
+\end{appendix}
+
+
 \end{document}
 % ----------------------------------------------------------------
