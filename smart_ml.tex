@@ -2,18 +2,18 @@
 \usepackage{graphicx}
 % \usepackage{algorithm}
 % \usepackage{algorithmic}
-\makeatletter  
-\newif\if@restonecol  
-\makeatother  
-\let\algorithm\relax  
-\let\endalgorithm\relax  
+\makeatletter 
+\newif\if@restonecol 
+\makeatother 
+\let\algorithm\relax 
+\let\endalgorithm\relax 
 \usepackage[linesnumbered,ruled,vlined]{algorithm2e}
 \usepackage{algpseudocode}
 \usepackage{hyperref}
 \usepackage{lineno}
 \usepackage[a4paper, top=2.8cm, left=2cm, right=2cm, bottom=2cm]{geometry}
 %\linenumbers
-\renewcommand{\algorithmicrequire}{\textbf{Input:}}  % Use Input in the format of Algorithm  
+\renewcommand{\algorithmicrequire}{\textbf{Input:}} % Use Input in the format of Algorithm 
 \renewcommand{\algorithmicensure}{\textbf{Output:}} % Use Output in the format of Algorithm 
 % ----------------------------------------------------------------
 \vfuzz2pt % Don't report over-full v-boxes if over-edge is small
@@ -33,7 +33,7 @@
 %\commby{}%
 % ----------------------------------------------------------------
 \begin{abstract}
-  In this report, the detailed illustration of data preprocessing and feature engineering, model choosing and parameter tuning, results evaluation and insights from this task are included.
+ In this report, the detailed illustration of data preprocessing and feature engineering, model choosing and parameter tuning, results evaluation and insights from this task are included.
 \end{abstract}
 \maketitle
 %\tableofcontents{}
@@ -42,16 +42,18 @@
 
 \subsection{Introduction}
 
-Various disk failures are not rare in large-scale IDCs and cloud computing environments, fortunately, we have S.M.A.R.T. (Self-Monitoring, Analysis, and Reporting Technology; often written as SMART) logs collected from computer hard disk drives (HDDs), solid-state drives (SSDs) and eMMC drives that detects and reports on various indicators of drive reliability, with the intent of enabling the anticipation of hardware failures.
+Various disk failures are not rare in large-scale IDCs and cloud computing environments, fortunately, we have S.M.A.R.T. (Self-Monitoring, Analysis, and Reporting Technology; often written as SMART) logs collected from computer hard disk drives (HDDs), solid-state drives (SSDs) and eMMC drives that detects and reports on various indicators of drive reliability, with the intent of enabling the anticipation of hardware failures. Hence, HDD vendors are highly motivated to reduce the rate of failures as a cost saving measure.
 
-In data center environments, hard disk drive (HDD) failures are a rare but costly occurrence. Therefore, HDD vendors are highly motivated to reduce the rate of failures as a cost saving measure. But currently, HDD manufacturers use Self-Monitoring and Reporting Technology (SMART) attributes collected during normal operations to predict failures. SMART attributes represent HDD health statistics such as the number of scan errors, reallocation counts and probational counts of a HDD. If a certain attribute considered critical to HDD health goes above  its  threshold  value,  the  HDD  is  marked  as  likely  to  fail  [P  inheiro] .
-Our project focuses on applying machine learning to improve prediction accuracy over baseline heuristics in hard disk drives. The goal of our project is twofold: 1) to achieve a higher recall, precision and accuracy than our baseline implementation modeled off of current enterprise failure detection models. 2) to analyze which of our subset of machine learning models is best suited towards predicting failure of HDDs. We analyze three different algorithms: Logistic Regression, Naive Bayes and Random Forest, to see which has the highest accuracy, recall and precision when   predicting   HDD   failures.
+SMART attributes represent HDD health statistics such as the number of scan errors, reallocation counts and probational counts of a HDD, and a detailed list can be seen in \cite{Wiki-smart}. If a certain attribute considered critical to HDD health goes above its threshold value, the HDD is marked as likely to fail\cite{Pinheiro2007}.
+
+
+This report focuses on applying machine learning to improve prediction accuracy over baseline heuristics in hard disk drives. The goal of this case study is twofold: 1) to achieve a higher recall, precision and accuracy than our baseline implementation modeled off of current enterprise failure detection models. 2) to analyze which of our subset of machine learning models is best suited towards predicting failure of HDDs. Three different algorithms are applied: Logistic Regression, Naive Bayes and Random Forest, to see which has the best performance when predicting HDD failures.
 
 \subsection{Literature Review}
 
-Pinheiro et al analyzed failure trends in a large disk drive population of over one hundred thousand enterprise HDDs at a Google data center. They found that specific SMART parameters (scan errors, reallocation counts, offline reallocation counts, and probational counts) had a large impact on failure probability. Most importantly, a large fraction of failed drives showed no signs of failure in all of its monitored SMART features, making it unlikely to achieve an accurate predictive failure model that can be built based on SMART signals alone [Pinheiro]. Similarly, BackBlaze analyzed the correlation rates between its HDD failures and SMART attributes and found that SMART 5, 187, 188, 197, and 198 had the highest rates of correlation to HDD failure. These SMART attributes are also related   to   scan   error,   reallocation   count   and   probational   counts   [Klein].
-Pitakrat et al evaluated 21 machine learning (ML) algorithms for predicting HDD failure. Pitakrat et al found that of the 21 ML algorithms tested, a Random Forest algorithm produced the highest area under a ROC Curve (AUC), while   a   Nearest   Neighbor   classifier   had   the   highest   F1-score.
-Hughes et al also studied machine learning methods for predicting failures in HDDs. They analyzed the performance of Support Vector Machines (SVM), rank-sum and multi instance Naive Bayes. SVMs achieved the highest   performance   with   a   50.6\%   detection   and   0\%   false   alarm   rate   [Hughes   et   al].
+Pinheiro et al analyzed failure trends in a large disk drive population of over one hundred thousand enterprise HDDs at a Google data center. They found that specific SMART parameters (scan errors, reallocation counts, offline reallocation counts, and probational counts) had a large impact on failure probability. Most importantly, a large fraction of failed drives showed no signs of failure in all of its monitored SMART features, making it unlikely to achieve an accurate predictive failure model that can be built based on SMART signals alone [Pinheiro]. Similarly, BackBlaze analyzed the correlation rates between its HDD failures and SMART attributes and found that SMART 5, 187, 188, 197, and 198 had the highest rates of correlation to HDD failure. These SMART attributes are also related to scan error, reallocation count and probational counts [Klein].
+Pitakrat et al evaluated 21 machine learning (ML) algorithms for predicting HDD failure. Pitakrat et al found that of the 21 ML algorithms tested, a Random Forest algorithm produced the highest area under a ROC Curve (AUC), while a Nearest Neighbor classifier had the highest F1-score.
+Hughes et al also studied machine learning methods for predicting failures in HDDs. They analyzed the performance of Support Vector Machines (SVM), rank-sum and multi instance Naive Bayes. SVMs achieved the highest performance with a 50.6\% detection and 0\% false alarm rate [Hughes et al].
 
 % ----------------------------------------------------------------
 %
@@ -60,33 +62,68 @@ Hughes et al also studied machine learning methods for predicting failures in HD
 
 Data sources from \url{https://www.backblaze.com/b2/hard-drive-test-data.html}
 
+\subsection{First Glance at Datasets}
+
+BackBlaze has published statistics and their insights based on the hard drives in the data center.
+Each day in their data center, they take a snapshot of each operational hard drive and output a file for recording.
+The first row of the each file contains the column names, shown in the followings:
+\begin{itemize}
+	\item \textbf{Date} - The date of the file in \textit{yyyy-mm-dd} format.
+	\item \textbf{Serial Number} - The manufacturer-assigned serial number of the drive.
+	\item \textbf{Model} - The manufacturer-assigned model number of the drive.
+	\item \textbf{Capacity} - The drive capacity in bytes.
+	\item \textbf{Failure} - Contains a "0"  if the drive is operational. Contains a "1" if this is the last day the drive was OK before failing and replaced.
+	\item \textbf{SMART Stats} - $90$ columns of data, that are the Raw and Normalized vlaues for $45$ different SMART stats are reported by the given drive. Each value is the number reported by the drive.
+\end{itemize}
+
+In Figure \ref{fig:snapshot}, a snapshot of Backblaze datasets can be seen. Typically, there are numerous blank fields in each record file because most drives do not report values for all SMART stats.
+Also, different drives may report different stats based on their model and/or manufacturer. In the meantime, reported stats for the same SMART stat can vary in meaning based on the drive manufacturer and the drive model.
+When processing the data, as suggested by Backblaze, one should conduct bounds checks and notice the changing number of drives.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=\textwidth]{img/snapshot_data_wide.PNG}
+	\caption{A snapshot of Backblaze data sets.}\label{fig:snapshot}
+\end{figure}
+
+\subsection{Data Preprocessing}
+
+
+
+
+
+
+
+\begin{enumerate}
+	\item Choose raw over normalized SMART Data points
+	\item Failure status smoothing/backtracking
+	\item Filter out all HDD models besides Seagate models
+	\item Balance out the data set
+\end{enumerate}
+
+\subsection{Feature Engineering}
+
+\subsubsection*{Feature Selection}
+
+% \begin{itemize}
+% 	\item Filter
+% 	\item Wrapper
+% 	\item Embedded
+% \end{itemize}
+
+From experience, BackBlaze have found the following five SMART metrics indicate impending disk drive failure (see Figure \ref{fig:raw-fail-percentage}).
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=\textwidth]{img/blog-smart-fail-vs-good.png}
+	\caption{Percentage of both failed and operational drives with a RAW value of the five SMART attributes.}\label{fig:raw-fail-percentage}
+\end{figure}
+
+Ninety variables and millions of data points not only take an extensive amount of time to train and test on, but can also lead to overfitting. To reduce the computational workload and improve the performance of our models, we chose to select only the most relevant features and avoid features with a large amount of unfilled data points.
+
 As of the end of 2017, there are about 88 million entries totaling 23 GB of data. Each entry consists of the date, manufacturer, model, serial number, status (operational or failed), and all of the SMART attributes reported by that drive. 
 5, 187, 188, 197, 198
-\begin{algorithm}  
-	\caption{Data importing and preprocessing}
-	\LinesNumbered  
-	\KwIn{The origianl test data of the year of 2017 plus Q4 of 2016 from Backblaze}
-	\KwOut{Raw and normalized values of the five SMART attributes for the year of 2017, along with failure/operational status, date, serial number}
-	($X$, $Y$) = Data selection(SMART $5$, SMART $187$, SMART $188$, SMART $197$, SMART $198$, date, serial number, Failure status)\;  
-	Initialize a new column for each SMART attribute with $0$, named SMART binary, to denote if this attribute is non-zero  \;
-	
-	\eIf{SMART attributes $\neq$ null}
-	{
-		\lIf {SMART attributes $\neq 0$}
-		{
-			let the value be $1$
-		}
-	}
-	{
-		let the value be $0$ \;
-	}
 
-	\If{ failure status is true}  
-	{  
-		Mark last $60$ days (if applicable) of the HDD's \textit{failure status as true} \;  
-	}
-	\textbf{return} $X$ and $Y$, with three versions (raw, normalized, binary values of SMART attributes);
-\end{algorithm}  
 
 % http://blog.csdn.net/lwb102063/article/details/53046265
 % https://oeis.org/wiki/List_of_LaTeX_mathematical_symbols
@@ -103,31 +140,9 @@ There are some critical questions to be answered if one needs to complete this c
 	\item Train the models and tune parameters.
 	\item Conduct prediction for other data sets and evaluate results. Confusion Matrix.
 \end{itemize}
-
-\subsection{Data Preprocessing}
-
-
-\begin{enumerate}
-	\item Choose raw over normalized SMART Data points
-	\item Failure status smoothing/backtracking
-	\item Filter out all HDD models besides Seagate models
-	\item Balance out the data set
-\end{enumerate}
-
-\subsection{Feature Engineering}
-
-\subsubsection*{Feature Selection}
-
-\begin{itemize}
-	\item Filter
-	\item Wrapper
-	\item Embedded
-\end{itemize}
-
-From experience, BackBlaze have found the following five SMART metrics indicate impending disk drive failure:
+Algorithm \ref{alg:data} summaries the above process in the pseudo code format.
 
 
-Ninety variables and millions of data points not only take an extensive amount of time to train and test on, but can also lead to overfitting. To reduce the computational workload and improve the performance of our models, we chose   to   select   only   the   most   relevant   features   and   avoid   features   with   a   large   amount   of   unfilled   data   points.
 % ----------------------------------------------------------------
 %
 % ----------------------------------------------------------------
@@ -137,42 +152,29 @@ How to choose machine learning models and tune the parameters?
 
 Reduce to a classification problem.
 
-\begin{algorithm}  
-	\caption{Model selection, training, and parameters tuning}
-	\LinesNumbered  
-	\KwIn{$X$ and $Y$ of the year of 2017}
-	\KwOut{Trained model}
-	Split the datasets into two pieces, training datasets ($X_{train}$, $Y_{train}$) and validation datasets ($X_{test}$, $Y_{test}$), by cross validation\;
-	Train different models with training datasets\;
-	\Repeat{parameters are optimized or maximum iterations exhausted}
-	{
-		Evalute the models and tune parameters\;
-	}
-	\textbf{return} trained model;
-\end{algorithm}  
 
 \subsection*{Base Line}
 
-Our baseline analysis mimics what BackBlaze currently implements in its failure prediction system. We analyze five SMART attributes ( SMART 5, 187, 188, 197, 198) and predict a HDD will fail if any of these critical raw SMART   attributes   are   greater   than   0.
-Our goal is therefore to maintain as high of a TPR with a maximum TPR equal to the baseline analysis, and to focus   on   reducing   the   FPR   to   0.
+Our baseline analysis mimics what BackBlaze currently implements in its failure prediction system. We analyze five SMART attributes ( SMART 5, 187, 188, 197, 198) and predict a HDD will fail if any of these critical raw SMART attributes are greater than 0.
+Our goal is therefore to maintain as high of a TPR with a maximum TPR equal to the baseline analysis, and to focus on reducing the FPR to 0.
 
 \subsection*{Logistic Regression}
 
-Logistic Regression is one of the basic tools for performing binary classification. One of the assumptions made in order for Logistic Regression to potentially perform well is that the data is linear. This means that the score we obtain from Logistic Regression is affected proportionally to changes in the feature values in a linear fashion. The tool mainly served as a second baseline in some sense as it was our first attempt at the classification problem beyond implementing   the   simple   baseline.   We   also   employed   L2   regularization.
+Logistic Regression is one of the basic tools for performing binary classification. One of the assumptions made in order for Logistic Regression to potentially perform well is that the data is linear. This means that the score we obtain from Logistic Regression is affected proportionally to changes in the feature values in a linear fashion. The tool mainly served as a second baseline in some sense as it was our first attempt at the classification problem beyond implementing the simple baseline. We also employed L2 regularization.
 
 \subsection*{Naive Bayes}
 
-The Naive Bayes classifier model makes the assumption that the value of a feature is conditionally independent of the value of another feature given some class label. Among the different techniques used for building Naive Bayes models, we chose Multinomial Naive Bayes, which assumes that the probability of a feature value given some class label   is   sampled   from   a   multinomial   distribution.   For   regularization,   we   use   Laplace   smoothing.
+The Naive Bayes classifier model makes the assumption that the value of a feature is conditionally independent of the value of another feature given some class label. Among the different techniques used for building Naive Bayes models, we chose Multinomial Naive Bayes, which assumes that the probability of a feature value given some class label is sampled from a multinomial distribution. For regularization, we use Laplace smoothing.
 
 \subsection*{Random Forest}
 
 Random forest is an ensemble tool which takes a subset of observations and a subset of variables to build a group of decision trees. It builds multiple such decision trees and amalgamate them together to get a more accurate and stable prediction.
 
-\subsection*{K-Nearest Neighbours}
+%\subsection*{K-Nearest Neighbours}
 
-\subsection*{Support Vector Machines}
+%\subsection*{Support Vector Machines}
 
-\subsection*{Neural Network}
+%\subsection*{Neural Network}
 
 % ----------------------------------------------------------------
 %
@@ -212,17 +214,7 @@ where $TP$ refers to true positives, $FP$ is false positives and $FN$ denotes fa
 % 	\end{tabular}
 % \end{table}
 
-\begin{algorithm}  
-	\caption{Results evaluation}
-	\LinesNumbered  
-	\KwIn{$X_{test}$ and $Y_{test}$ of Q4 of 2016, trained models}
-	\KwOut{Evaluation of models}
-	Predict the failure status of $X_{test}$ with trained models\;
-	Contrast to $Y_{test}$ and compute $TP$, $TN$, $FP$ and $FN$\;
-	Calculate precision, recall, and $F_1$ score\;
-	Draw the ROC and AUC plots\;
-	\textbf{return} true;
-\end{algorithm}
+
 
 \begin{figure}[htb]
 	\centering
@@ -235,7 +227,6 @@ where $TP$ refers to true positives, $FP$ is false positives and $FN$ denotes fa
 \section{Conclusions}
 
 What insights or lessons learned from this task?
-\cite{Ren2018a}
 
 % ----------------------------------------------------------------
 \bibliographystyle{amsplain}
@@ -263,6 +254,64 @@ What insights or lessons learned from this task?
 	\end{itemize}
 \end{appendix}
 
+\newpage
+
+\subsection*{Appendix B: Algorithms Bank}
+
+\begin{appendix}
+	In this appendix, several algorithms in pseudo code format are listed.
+	\begin{algorithm}[h]
+		\caption{Data importing and preprocessing}\label{alg:data}
+		\LinesNumbered 
+		\KwIn{The origianl test data of the year of 2017 plus Q4 of 2016 from Backblaze}
+		\KwOut{Raw and normalized values of the five SMART attributes for the year of 2017, along with failure/operational status, date, serial number}
+		($X$, $Y$) = Data selection(SMART $5$, SMART $187$, SMART $188$, SMART $197$, SMART $198$, date, serial number, Failure status)\; 
+		Initialize a new column for each SMART attribute with $0$, named SMART binary, to denote if this attribute is non-zero \;
+		
+		\eIf{SMART attributes $\neq$ null}
+		{
+			\lIf {SMART attributes $\neq 0$}
+			{
+				let the value be $1$
+			}
+		}
+		{
+			let the value be $0$ \;
+		}
+	
+		\If{ failure status is true} 
+		{ 
+			Mark last $60$ days (if applicable) of the HDD's \textit{failure status as true} \; 
+		}
+		\textbf{return} $X$ and $Y$, with three versions (raw, normalized, binary values of SMART attributes);
+	\end{algorithm} 
+	
+	\begin{algorithm}[h]
+		\caption{Model selection, training, and parameters tuning}\label{alg:model}
+		\LinesNumbered 
+		\KwIn{$X$ and $Y$ of the year of 2017}
+		\KwOut{Trained model}
+		Split the datasets into two pieces, training datasets ($X_{train}$, $Y_{train}$) and validation datasets ($X_{test}$, $Y_{test}$), by cross validation\;
+		Train different models with training datasets\;
+		\Repeat{parameters are optimized or maximum iterations exhausted}
+		{
+			Evalute the models and tune parameters\;
+		}
+		\textbf{return} trained model;
+	\end{algorithm} 
+	
+	\begin{algorithm}[h]
+		\caption{Results evaluation}\label{alg:eval}
+		\LinesNumbered 
+		\KwIn{$X_{test}$ and $Y_{test}$ of Q4 of 2016, trained models}
+		\KwOut{Evaluation of models}
+		Predict the failure status of $X_{test}$ with trained models\;
+		Contrast to $Y_{test}$ and compute $TP$, $TN$, $FP$ and $FN$\;
+		Calculate precision, recall, and $F_1$ score\;
+		Draw the ROC and AUC plots\;
+		\textbf{return} true;
+	\end{algorithm}
+\end{appendix}
 
 \end{document}
 % ----------------------------------------------------------------
