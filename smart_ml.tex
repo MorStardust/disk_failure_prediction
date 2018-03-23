@@ -46,15 +46,22 @@ Various disk failures are not rare in large-scale IDCs and cloud computing envir
 
 SMART attributes represent HDD health statistics such as the number of scan errors, reallocation counts and probational counts of a HDD, and a detailed list can be seen in \cite{Wiki-smart}. If a certain attribute considered critical to HDD health goes above its threshold value, the HDD is marked as likely to fail\cite{Pinheiro2007}.
 
-
 This report focuses on applying machine learning to improve prediction accuracy over baseline heuristics in hard disk drives. The goal of this case study is twofold: 1) to achieve a higher recall, precision and accuracy than our baseline implementation modeled off of current enterprise failure detection models. 2) to analyze which of our subset of machine learning models is best suited towards predicting failure of HDDs. Three different algorithms are applied: Logistic Regression, Naive Bayes and Random Forest, to see which has the best performance when predicting HDD failures.
 
 \subsection{Literature Review}
 
-Pinheiro et al analyzed failure trends in a large disk drive population of over one hundred thousand enterprise HDDs at a Google data center. They found that specific SMART parameters (scan errors, reallocation counts, offline reallocation counts, and probational counts) had a large impact on failure probability. Most importantly, a large fraction of failed drives showed no signs of failure in all of its monitored SMART features, making it unlikely to achieve an accurate predictive failure model that can be built based on SMART signals alone [Pinheiro]. Similarly, BackBlaze analyzed the correlation rates between its HDD failures and SMART attributes and found that SMART 5, 187, 188, 197, and 198 had the highest rates of correlation to HDD failure. These SMART attributes are also related to scan error, reallocation count and probational counts [Klein].
-Pitakrat et al evaluated 21 machine learning (ML) algorithms for predicting HDD failure. Pitakrat et al found that of the 21 ML algorithms tested, a Random Forest algorithm produced the highest area under a ROC Curve (AUC), while a Nearest Neighbor classifier had the highest F1-score.
-Hughes et al also studied machine learning methods for predicting failures in HDDs. They analyzed the performance of Support Vector Machines (SVM), rank-sum and multi instance Naive Bayes. SVMs achieved the highest performance with a 50.6\% detection and 0\% false alarm rate [Hughes et al].
+Pinheiro et al\cite{Pinheiro2007} studied failure trends in a large scale of enterprise HDDs at a Google data center. 
+Their analysis idenitified that specific SMART parameters (scan errors, reallocation counts, offline reallocation counts, and probational counts) correlated highly with failures, while models based on SMART parameters alone were inadequate for accurate prediction because of the lack of occurrence of predictive SMART signals on a large fraction of failed drives.
+Besides, neither elevated temperature nor activity levels were found to be very little correlated with failure rates.
+It was noticed that vendors and end-users often saw different statistics (below $2\%$ and $6\%$ respectively) due to the difference in definition, and they proposed a concise definition: \textit{a drive is considered to have failed if it was replaced as part of a repairs procedure}.
+In their study, filtering was applied to cope with data integrity issues and clearly impossible data.
 
+Similarly, BackBlaze analyzed the correlation rates between its HDD failures and SMART attributes and found that SMART 5, 187, 188, 197, and 198 had the highest rates of correlation to HDD failure.
+Pitakrat et al\cite{Pitakrat2013} evaluated 21 machine learning (ML) algorithms for predicting HDD failure. 
+It was found by testing $21$ machine learning models that different algorithms are suitable for different applications based on the desired prediction quality and the tolerated training and prediction time.
+Specifically, a Random Forest (RF) algorithm produced the largest area under a ROC Curve (AUC), while a Nearest Neighbor classifier (NNC) had the highest F1-score.
+
+It can be summaried that the five mentioned SMART attributes are highly correlated with failures and various models should be tested to obtain the desired prediction. 
 % ----------------------------------------------------------------
 %
 % ----------------------------------------------------------------
